@@ -14,8 +14,8 @@ syntax match Special "\*[^\*]*\*"
 
 " links: they're simply proper paths, that *must* start with a dir name
 "" regexp 1: starts with ' ./' or ' /' or '  /'
-" syntax match Keyword "[\. \t]/\f\+" 
-syntax match Keyword "[\. \t]/[a-zA-Z/\_\-\.]\+" 
+" syntax match Keyword "[\. \t\~]/\f\+" 
+syntax match Keyword "[\. \t\~]/[a-zA-Z/\_\-\.]\+" 
 "" regexp 2: starts with '/' at start of line
 " syntax match Keyword "^/\f\+"
 syntax match Keyword "^/[a-zA-Z/\_\-\.]\+"
