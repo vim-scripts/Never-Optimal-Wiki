@@ -1,0 +1,52 @@
+This is a mirror of http://www.vim.org/scripts/script.php?script_id=5263
+
+Git repository: https://github.com/Dalker/vim-now
+
+Rationale:  after having tried several wiki vim plugins and several personal wiki workflows, the author realized that:
+                 a) full 'wiki' plugins tend to have too many features and impose too many conventions on the user
+                 b) no personal note-taking workflow is ever optimal ("never optimal")
+                 c) to actually get something written or done, you have to do it now (on a Never Optimal Wiki)
+
+Features: 
+ - From anywhere within vim: (<l> means <leader>)
+    <l>ni  goes to main index
+    <l>nr  creates new random note (in a predefined 'in' dir)
+
+  - Within a NOW buffer: (<ll> means <localleader>)
+    gf        open dir or file under cursor (adding suffix if needed)
+    <cr>    same as above (can be turned off to recover default <cr> functionality)
+    <ll>gf  mimeopen file under cursor (e.g. to open an url on default browser)
+    <ll>cf  create file or dir under cursor,  adding suffix if needed
+     -          go up to either dir's index.now file if available or to netrw
+    <ll>n    interactively name and move a file somewhere else (for random notes)
+    <ll>s    copy current file to shadow dir, prepending date to name (to keep historical log of notes)
+
+ - Minimal syntax highliting:
+   ./...    link to another file
+   =...=  title
+   *...*   emphasized text
+
+Possible usage:
+   - dump anything from the mind into a random note ( with <leader>ni from anywhere on vim)
+   - occasionally 'process' notes by naming them and placing them somewhere on the directory tree (with <localleader>n)
+   - shadow some notes, notably personal writing, to keep a historical log - usually right after naming them (with <localleader>s)
+
+Possible directory tree (besides in/ and shadow/ or equivalent):
+   - a 'circulating' dir with subdirs to help temporary notes blend together into something
+   - a 'lifehack' dir to contain long-term lifehacking tips
+   - a 'quotes' dir to contain notes which carry book quotes, based on post-its glued while reading one
+   - etc...
+
+  This could result in the a dir structure similar to the following:
+  now/---- in/ ---- random01.now
+       |        |-- random02.now
+       |        |-- (...)
+       |        \-- random15.now
+       |-- shadow/ -- (...)
+       |-- circulating/ ---- thinking_about_A/ -- (...)  
+       |                 |-- (...)
+       |                 \-- thinking_about_Z/ -- (...)
+       |-- lifehack/
+       |-- quotes/ 
+       \-- (...)
+
