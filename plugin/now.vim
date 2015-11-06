@@ -1,10 +1,12 @@
 """""""""""""""""""""""""""""""""""
 " Never Optimal Wiki - vim plugin "
 """""""""""""""""""""""""""""""""""
-
+"
+" basic configuration
 " Customization {{{
 let s:nowrootdir  = '~/active/now/'          " base dir for NeverOptimaWiki (used for <l>ni)
 let s:randomdir   = s:nowrootdir . 'in/'     " dir for random notes (used for <l>nr)
+let s:classifydir = '../circulating/'        " default for classifying, relative to random notes (used for <ll>n)
 let s:shadowdir   = s:nowrootdir . 'shadow/' " dir for keeping a date-sorted 'shadow' of content  (used for <ll>s)
 let s:NOWsuffix   = '.now'                   " suffix for now files
 let s:indexname   = 'index' . s:NOWsuffix    " name of index files (for <l>ni and for -)
@@ -12,21 +14,10 @@ let s:randombase  = 'random'                 " base name for random note files
 let s:webbrowser  = '!firefox '              " choice of web browser
 let s:mimeopencmd = '!mimeopen '             " choice of mimeopen program
 " }}}
-
-" O.S. specific (POSIX compliant by default) {{{
-" note: this plugin currently uses the following *nix commands:
-"                   'cp -i' and 'mv -i'
-" as they perform nice checks before copying/moving a file
-" so if you want to use this plugin in a different O.S., you'll
-" have to replace them by something equivalent
-let s:cpcommand  = '!cp -i '
-let s:mvcommand  = '!mv -i '
-" }}}
-
 " define filetype for Never Optimal Wiki "{{{
 execute 'silent! normal! :autocmd BufNewFile,BufRead *' . s:NOWsuffix . " set filetype=now" . "\r"
 "}}}
-
+" global mappings
 " <l>ni to access NOW from anywhere on vim "{{{
 execute "silent! normal! :nnoremap <leader>ni :e" s:nowrootdir . s:indexname . "<cr>" . "\r"
 "}}}
@@ -53,15 +44,14 @@ function! NOWrandom()
 endfun
 nnoremap <leader>nr :call NOWrandom()<cr> 
 "}}}
-
-" set gf suffix (called from ftplugin) {{{
-function! NOWsetsuffix()
+" functions called from ftplugin
+function! NOWsetsuffix() "{{{
+" set gf suffix (called from ftplugin) 
   execute "silent! normal! :set suffixesadd=" . s:NOWsuffix . "\r"
 endfunction
 " }}}
-
-" behaviour of - while on now files (mapped on ftplugin) {{{
-function! NOWbufup()
+function! NOWbufup() "{{{
+" behaviour of - while on now files (mapped on ftplugin)
   if expand('%:t') ==# s:indexname
     " if on index file, leave it for netrw
     open ./
@@ -76,29 +66,50 @@ function! NOWbufup()
     endif
   end
 endfunction "}}}
-
-" copy current file to shadow dir (mapped on ftplugin) {{{
-function! NOWshadow()
+function! NOWshadow() "{{{
+" copy current file to shadow dir (mapped on ftplugin)
   " shadowed contents have a date prefixed to the file name, to keep
   " a historical record of contents
   let l:destination = s:shadowdir . strftime('%Y.%m.%d') . '-' . expand('%:t')
-  execute 'normal! :' s:cpcommand . expand('%:t') . ' ' . l:destination . "\r"
+  let l:actual_file = expand('%:p')
+  execute 'normal! :saveas ' . l:destination . "\r"
+  execute 'normal! :e '      . l:actual_file . "\r"
+  execute 'normal! :bd '     . l:destination . "\r"
 endfunction "}}}
-
-" name and move elsewhere (mapped on ftplugin) {{{
-function! NOWname()
-  let l:destination = input("enter NOW name (without suffix) or <cr> to abort\n> ", '../', 'file')
-  if l:destination ==# "../"
-    echo "\naborting NOW naming"
+function! NOWname() "{{{
+" name and move elsewhere (mapped on ftplugin)
+  let l:destination = input("enter NOW name (without suffix) or <esc> to abort\n> ", "" , 'file') . s:NOWsuffix
+  if l:destination ==# "" || l:destination ==# s:NOWsuffix
+    echo "\nNOW naming aborted by user"
+  elseif filereadable(l:destination)
+    echo "\nNOW naming aborted: file exists"
   else
-    execute 'normal! :' . s:mvcommand . expand('%:t') . ' ' . l:destination . s:NOWsuffix . "\r" 
-    bd
-    execute "normal! :open " . l:destination . s:NOWsuffix . "\r"
+    let l:prev_name = expand('%:t')
+    execute 'normal! :saveas '     . l:destination . "\r" 
+    execute 'normal! :!rm '        . l:prev_name   . "\r" 
+    execute 'silent! normal! :bd ' . l:prev_name   . "\r" 
   endif
 endfunction "}}}
-
-" create file or dir under cursor (mapped on ftplugin) {{{
-function! NOWCreateUnderCursor()
+function! NOWclassify() "{{{
+" classify, i.e. move elsewhere (mapped on ftplugin)
+  let l:dest_dir = input("enter destination or <esc> to abort\n> ", s:classifydir , 'file')
+  let l:dest_file = fnamemodify(l:dest_dir, ":p") . expand('%:t')
+  if l:dest_dir ==# ""
+    echo "\nNOW classifying aborted by user"
+  elseif isdirectory(l:dest_dir) == 0 " in vim false is set as 0
+    echo "\nNOW classifying aborted: " . l:dest_dir . " is not a directory"
+  elseif filereadable(l:dest_file)
+    echo "\nNOW classifying aborted: file exists"
+  else
+    let l:prev_dir  = expand('%:p:h')
+    let l:prev_file = expand('%:p')
+    execute 'normal! :saveas '          . l:dest_file . "\r"
+    execute 'normal! :!rm '             . l:prev_file   . "\r"
+    execute 'silent! normal! :Explore ' . l:prev_dir    . "\r"
+  endif
+endfunction "}}}
+function! NOWCreateUnderCursor() "{{{
+" create file or dir under cursor (mapped on ftplugin)
   " capture name of dir/file to be created on @z
   execute "normal! \"zyiW"
   " following is not really needed if autochdir is on, but it's a good precaution just in case
@@ -125,9 +136,8 @@ function! NOWCreateUnderCursor()
     execute "normal! :edit " . l:tobeopened . "\r"
   endif
 endfun "}}}
-
-" open under cursor with browser or mimeopen (mapped on ftplugin) {{{
-function! NOWMimeOpenUnderCursor()
+function! NOWMimeOpenUnderCursor() "{{{
+" open under cursor with browser or mimeopen (mapped on ftplugin)
   execute "normal! \"zyiW"
   " following need is not really needed if autochdir is on, but it's a good precaution just in case
   execute "normal! :cd %:p:h\r"
@@ -139,8 +149,8 @@ function! NOWMimeOpenUnderCursor()
     execute "normal! :" . s:mimeopencmd . @z . "\r"
   endif
 endfun "}}}
-
+"
 "------------------------
 " CopyLeft by dalker
 " create date: 2015-08-18
-" modif  date: 2015-11-01
+" modif  date: 2015-11-05
