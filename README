@@ -1,6 +1,7 @@
 This is a mirror of http://www.vim.org/scripts/script.php?script_id=5263
 
 Git repository: https://github.com/Dalker/vim-now
+Note: a proper help file will be included in version 0.5
 
 Rationale:  after having tried several wiki vim plugins and several personal wiki workflows, the author realized that:
                  a) full 'wiki' plugins tend to have too many features and impose too many conventions on the user
@@ -11,6 +12,7 @@ Features:
  - From anywhere within vim: (<l> means <leader>) - all global keymaps can be easily overridden (see configuration at bottom of page)
     <l>ni  goes to main Nerver Optimal Wiki index
     <l>nr  creates new random note (in a predefined 'in' dir)
+    <l>nk creates or updates index file in current directory
 
  -  Within a NOW buffer: (<ll> means <localleader>)
     gf        open dir or file under cursor, adding suffix if needed (vim standard)
